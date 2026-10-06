@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Colorado Road Trip Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a road atlas you can use from the passenger seat. Single column, jump bar, each day a leg table plus a timed schedule. */
+:root{
+  --bg:#f1f3ee; --card:#fbfcf9; --ink:#1b2420; --muted:#5a6862; --line:#d5dbd3;
+  --spruce:#1f4d43; --spruce-soft:#dfe9e4; --aspen:#a86f05; --aspen-soft:#f6ead0;
+  --skip:#9a3f2c; --skip-soft:#f5e1db; --warn:#8a5a00;
+  --on-spruce:#ffffff;
+  --display:"Zilla Slab",Rockwell,"Roboto Slab",Georgia,serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111715; --card:#18201d; --ink:#e7ece7; --muted:#9fb0a8; --line:#2c3833;
+  --spruce:#7cc4ad; --spruce-soft:#1e322c; --aspen:#e3b04f; --aspen-soft:#33291a;
+  --skip:#ee947f; --skip-soft:#3a2420; --warn:#e3b04f; --on-spruce:#0d1513; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111715; --card:#18201d; --ink:#e7ece7; --muted:#9fb0a8; --line:#2c3833;
+  --spruce:#7cc4ad; --spruce-soft:#1e322c; --aspen:#e3b04f; --aspen-soft:#33291a;
+  --skip:#ee947f; --skip-soft:#3a2420; --warn:#e3b04f; --on-spruce:#0d1513; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:900px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);line-height:1.1;text-wrap:balance;margin:0}
+h2{font-size:clamp(26px,4.4vw,34px);font-weight:700}
+h3{font-size:20px;font-weight:600}
+p{margin:0}
+a{color:var(--spruce);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--aspen);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* header */
+header.top{padding-block:40px 24px;display:grid;gap:14px}
+header.top h1{font-size:clamp(38px,8vw,64px);font-weight:700;letter-spacing:-.01em}
+header.top .lede{font-size:18px;max-width:62ch;color:var(--muted)}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid var(--line);background:var(--card);margin-top:8px}
+.strip div{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;gap:2px;min-width:0}
+.strip b{font-family:var(--display);font-size:18px;font-weight:600}
+.strip span{font-size:13px;color:var(--muted)}
+.strip .mono{font-size:13px;color:var(--ink)}
+
+nav.jump{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-block:8px;margin-bottom:28px}
+nav.jump::-webkit-scrollbar{display:none}
+nav.jump a{flex:none;text-decoration:none;color:var(--muted);font-weight:600;font-size:14px;padding:6px 12px;border-radius:999px}
+nav.jump a:hover{background:var(--spruce-soft);color:var(--ink)}
+
+section{display:grid;gap:16px;margin-bottom:48px;scroll-margin-top:60px}
+.sec-head{display:grid;gap:6px}
+.sec-head p{color:var(--muted);max-width:65ch}
+
+/* callouts */
+.changes{display:grid;gap:0;border-top:2px solid var(--ink)}
+.change{display:grid;grid-template-columns:150px 1fr;gap:16px;padding-block:14px;border-bottom:1px solid var(--line)}
+.change b{font-family:var(--display);font-size:17px;font-weight:600}
+@media (max-width:600px){.change{grid-template-columns:1fr;gap:4px}}
+
+/* checklist */
+.book{display:grid;gap:10px}
+.task{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:start;background:var(--card);border:1px solid var(--line);padding:14px 16px}
+.task.critical{border-left:4px solid var(--skip)}
+.task input{width:20px;height:20px;margin-top:3px;accent-color:var(--spruce)}
+.task label{display:grid;gap:4px;cursor:pointer;min-width:0}
+.task label b{font-size:17px}
+.task .when{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
+.task.done label b{text-decoration:line-through;color:var(--muted)}
+@media (max-width:600px){.task{grid-template-columns:28px 1fr}.task .when{grid-column:2;text-align:left}}
+
+/* chips */
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:3px;vertical-align:2px;white-space:nowrap}
+.must{background:var(--spruce);color:var(--on-spruce)}
+.nice{background:var(--aspen-soft);color:var(--aspen);box-shadow:inset 0 0 0 1px var(--aspen)}
+.skip{background:var(--skip-soft);color:var(--skip)}
+.wx{background:transparent;color:var(--warn);box-shadow:inset 0 0 0 1px var(--warn)}
+.res{background:var(--skip);color:var(--card)}
+
+/* days */
+.day{background:var(--card);border:1px solid var(--line);display:grid}
+.day-head{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;padding:20px 20px 16px;border-bottom:1px solid var(--line);align-items:end}
+.day-date{grid-row:span 2;font-family:var(--display);text-align:center;line-height:1;border-right:1px solid var(--line);padding-right:18px}
+.day-date small{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.day-date strong{font-size:40px;font-weight:700}
+.day-head .facts{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--muted)}
+.day-head .facts .mono{color:var(--ink)}
+.day-body{display:grid;gap:18px;padding:18px 20px 22px}
+.legs{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid var(--line)}
+td{padding:8px 10px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.total td{font-weight:700;border-bottom:0}
+.sched{display:grid;gap:0;margin:0;padding:0;list-style:none}
+.sched li{display:grid;grid-template-columns:96px 1fr;gap:14px;padding-block:9px;border-bottom:1px dashed var(--line)}
+.sched li:last-child{border-bottom:0}
+.sched time{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums;color:var(--spruce);font-weight:500;padding-top:1px}
+.sched .what{display:grid;gap:3px;min-width:0}
+.sched .what b{font-weight:600}
+.sched .what span{font-size:14px;color:var(--muted)}
+@media (max-width:520px){.sched li{grid-template-columns:72px 1fr;gap:10px}.sched time{font-size:13px}}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.note{padding:12px 14px;background:var(--bg);border:1px solid var(--line);font-size:14px;display:grid;gap:4px;align-content:start;min-width:0}
+.note h4{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.note.backup{border-color:var(--warn)}
+.note.backup h4{color:var(--warn)}
+.note ul{margin:0;padding-left:18px;display:grid;gap:3px}
+
+/* decision */
+.toggle{display:inline-flex;border:1px solid var(--line);background:var(--card);padding:3px;gap:3px;flex-wrap:wrap}
+.toggle button{font:inherit;font-weight:600;font-size:14px;border:0;background:transparent;color:var(--muted);padding:8px 14px;cursor:pointer}
+.toggle button[aria-pressed="true"]{background:var(--spruce);color:var(--on-spruce)}
+.compare{overflow-x:auto;background:var(--card);border:1px solid var(--line);padding:4px 16px 8px}
+.compare td:first-child{color:var(--muted);width:30%}
+.compare .rec{color:var(--spruce);font-weight:700}
+.verdict{background:var(--spruce);color:var(--on-spruce);padding:20px 22px;display:grid;gap:8px}
+.verdict h3{font-size:24px}
+.verdict p{max-width:66ch}
+
+.roads td:nth-child(1){font-weight:600}
+.small{font-size:14px}
+footer{border-top:1px solid var(--line);padding-top:18px;font-size:13px;color:var(--muted);display:grid;gap:8px}
+footer ul{margin:0;padding-left:18px;display:grid;gap:2px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Dallas · Trinidad · Tabernash base · Oct 9–13, 2026 (+14 optional)</div>
+  <h1>Colorado Road Trip Plan</h1>
+  <p class="lede">Your brief, checked against the 2026 rules and the forecast as of Tuesday, Oct 6. The plan works, with three real fixes: Bear Lake needs a permit you probably don't have yet, it's on the far side of the park from Tabernash, and Friday runs later than the brief assumed.</p>
+  <div class="strip">
+    <div><span>Fri · Oct 9</span><b>Dallas → Trinidad</b><span class="mono">~605 mi · 9½ h</span></div>
+    <div><span>Sat · Oct 10</span><b>Gods + Pikes Peak</b><span class="mono">~345 mi · 5½ h</span></div>
+    <div><span>Sun · Oct 11</span><b>Maroon Bells loop</b><span class="mono">~385 mi · 7¾ h</span></div>
+    <div><span>Mon · Oct 12</span><b>Rocky Mountain NP</b><span class="mono">~185 mi · 5 h</span></div>
+    <div><span>Tue–Wed</span><b>Durango, then home</b><span class="mono">~425 + 860 mi</span></div>
+  </div>
+</header>
+
+<nav class="jump" aria-label="Sections">
+  <a href="#book">Book now</a><a href="#changes">What changed</a><a href="#fri">Fri</a><a href="#sat">Sat</a><a href="#sun">Sun</a><a href="#mon">Mon</a><a href="#decision">Tue / Wed</a><a href="#roads">Road backups</a><a href="#verdicts">Keep / skip</a><a href="#family">Kid &amp; altitude</a>
+</nav>
+
+<section id="book">
+  <div class="sec-head">
+    <span class="eyebrow">Do these before Friday</span>
+    <h2>Reservations and permits</h2>
+    <p>Tick them off as you go. Ticks are saved on this device only.</p>
+  </div>
+  <div class="book">
+    <div class="task critical"><input type="checkbox" id="t-rmnp"><label for="t-rmnp"><b>RMNP Timed Entry + Bear Lake Road permit · Mon Oct 12</b><span class="small">Recreation.gov, $2 fee. Choose the <b>8:00–10:00 AM</b> window. Required 5 AM–6 PM through Oct 18. The October block went on sale Sept 1 and is likely gone, so check daily for cancellations. If none turn up, more permits release at <b>7:00 PM MDT on Sun Oct 11</b> for Monday. You'll be at dinner in Frisco then (good signal); have one person logged in and ready at 6:58. Bring $35 for park entry, or an annual pass.</span></label><span class="when">CRITICAL</span></div>
+    <div class="task critical"><input type="checkbox" id="t-mb"><label for="t-mb"><b>Maroon Bells shuttle · Sun Oct 11, ~10:15 AM departure</b><span class="small">visitmaroonbells.com. Shuttles leave Aspen Highlands and run 8 AM–5 PM through Oct 18. $16 per adult, $10 per child 12 and under. Driving your own car instead needs a $10 parking reservation and arrival before 8 AM, which would mean leaving Tabernash at 4 AM.</span></label><span class="when">BOOK NOW</span></div>
+    <div class="task"><input type="checkbox" id="t-trin"><label for="t-trin"><b>Trinidad hotel · Fri Oct 9, late check-in</b><span class="small">You'll arrive around 10:30–11 PM Mountain time. Call the hotel and confirm late arrival so the room isn't released.</span></label><span class="when">CONFIRM</span></div>
+    <div class="task"><input type="checkbox" id="t-dgo"><label for="t-dgo"><b>Durango hotel · Tue Oct 13 (Option B)</b><span class="small">Book a free-cancellation room now. You can cancel it if Wednesday falls through or Red Mountain Pass gets snow.</span></label><span class="when">HOLD</span></div>
+    <div class="task"><input type="checkbox" id="t-pp"><label for="t-pp"><b>Pikes Peak Highway · no reservation needed in October</b><span class="small">Pay at the gate: $18 per adult, $8 per child 6–15, under 6 free. The uphill gate opens at 9 AM. <b>Last entry is 3 PM</b>, the summit closes at 4, and the downhill gate at 5.</span></label><span class="when">AT GATE</span></div>
+    <div class="task"><input type="checkbox" id="t-free"><label for="t-free"><b>Nothing to book:</b> Garden of the Gods (free), Independence ghost town ($5 suggested donation per adult, kids free), Trail Ridge Road (covered by park entry).</label><span class="when">—</span></div>
+  </div>
+</section>
+
+<section id="changes">
+  <div class="sec-head">
+    <span class="eyebrow">Corrections to the brief</span>
+    <h2>What changed and why</h2>
+  </div>
+  <div class="changes">
+    <div class="change"><b>Monday geography</b><p>Tabernash is near RMNP's <b>west</b> entrance (Grand Lake). Bear Lake is on the <b>east</b> side. The only direct way there is Trail Ridge Road, about 2 hours each way. Trail Ridge is the route itself, not an optional extra. If it closes, Bear Lake turns into a 5½-hour round trip around the park. A west-side backup plan is below.</p></div>
+    <div class="change"><b>Bear Lake permit</b><p>The brief listed it as "check requirements." For Oct 12 a Timed Entry + Bear Lake Road permit is required from 5 AM to 6 PM. You enter the park before 9 AM, so you don't need the general timed-entry permit (Oct 12 is its last day), but the Bear Lake Road permit is a separate requirement.</p></div>
+    <div class="change"><b>Friday arrival</b><p>About 605 miles and 9½ hours of driving, plus stops. Leaving at 1 PM Central puts you in Trinidad around <b>10:30–11 PM Mountain</b>, not 8–9. The stretch after Amarillo is in the dark, and deer and pronghorn are common there.</p></div>
+    <div class="change"><b>Sunday loop</b><p>Drive to Aspen on the interstate via Glenwood Springs, then come back over Independence Pass. The ghost town sits on that road, so you don't backtrack. Take the shuttle rather than your own car, because the parking rules would force a 4 AM start.</p></div>
+    <div class="change"><b>Option B honesty</b><p>The extra Durango night doesn't remove the 13-hour drive home. Durango to Dallas is about as far as Tabernash to Dallas. Option B adds a great scenic day and moves the long drive to Wednesday. It's still the better choice. Just plan Wednesday as a full driving day.</p></div>
+    <div class="change"><b>Fall color</b><p>2026 color was early and patchy, with most of the state peaking around Oct 1. By Oct 10–12, aspens at Maroon Bells, Independence Pass, and Trail Ridge (9,500 ft and up) are likely past peak or bare. The mountains are still the reason to go. The best remaining gold should be lower down: Glenwood Canyon, the Roaring Fork valley, and Ridgway, Ouray, and Durango on Tuesday.</p></div>
+    <div class="change"><b>Holiday crowds</b><p>Mon Oct 12 is Columbus Day / Indigenous Peoples' Day, so Saturday through Monday is a 3-day weekend. Parking lots will fill early. The schedule below has you arriving before the rush.</p></div>
+  </div>
+</section>
+
+<!-- FRIDAY -->
+<section id="fri">
+  <article class="day">
+    <div class="day-head">
+      <div class="day-date"><small>Fri</small><strong>9</strong></div>
+      <h3>Dallas → Trinidad: driving day only</h3>
+      <div class="facts"><span class="mono">~605 mi</span><span class="mono">9½ h driving</span><span>High point: Raton Pass <span class="mono">7,834 ft</span></span><span>Clocks go back 1 h at the NM line</span></div>
+    </div>
+    <div class="day-body">
+      <div class="legs"><table>
+        <thead><tr><th>Leg</th><th>Route</th><th class="num">Miles</th><th class="num">Drive</th></tr></thead>
+        <tbody>
+          <tr><td>Dallas → Wichita Falls</td><td>I-35E / US 380 → US 287</td><td class="num">~145</td><td class="num">2:10</td></tr>
+          <tr><td>Wichita Falls → Amarillo</td><td>US 287 via Childress</td><td class="num">~220</td><td class="num">3:15</td></tr>
+          <tr><td>Amarillo → Trinidad</td><td>US 87 Dumas · Dalhart · Clayton → I-25 Raton</td><td class="num">~240</td><td class="num">4:00</td></tr>
+          <tr class="total"><td>Total</td><td></td><td class="num">~605</td><td class="num">~9:25</td></tr>
+        </tbody>
+      </table></div>
+      <ol class="sched">
+        <li><time>1:00 PM CT</time><div class="what"><b>Leave Dallas</b><span>Tank full, snacks and water in the car.</span></div></li>
+        <li><time>3:15 PM CT</time><div class="what"><b>Wichita Falls: gas and restrooms</b><span>15 minutes.</span></div></li>
+        <li><time>4:45 PM CT</time><div class="what"><b>Childress: quick stretch</b><span>Optional. Skip it if the child is asleep.</span></div></li>
+        <li><time>6:45 PM CT</time><div class="what"><b>Amarillo: dinner and fill up</b><span>45 minutes. This is the last big town. Fuel gets sparse on US 87, so leave with a full tank.</span></div></li>
+        <li><time>9:00 PM MT</time><div class="what"><b>Clayton, NM: restroom and gas top-up</b><span>You crossed into Mountain time at the New Mexico line, so it's 10 PM by your body clock.</span></div></li>
+        <li><time>10:45 PM MT</time><div class="what"><b>Arrive Trinidad</b><span>Go straight to bed. Saturday starts at 7:15.</span></div></li>
+      </ol>
+      <div class="notes">
+        <div class="note"><h4>If you're fading</h4><p>Stop in Dalhart or Raton instead. Raton adds only 25 minutes to Saturday. The night stretch has wildlife on the road, so don't push through drowsiness.</p></div>
+        <div class="note"><h4>No sightseeing</h4><p>As planned. The value of Friday is waking up two hours from Colorado Springs.</p></div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- SATURDAY -->
+<section id="sat">
+  <article class="day">
+    <div class="day-head">
+      <div class="day-date"><small>Sat</small><strong>10</strong></div>
+      <h3>Garden of the Gods → Pikes Peak → Tabernash</h3>
+      <div class="facts"><span class="mono">~345 mi</span><span class="mono">~5½ h driving + ~3 h on Pikes</span><span>High point: Pikes summit <span class="mono">14,115 ft</span></span><span>Forecast: mostly clear, mild</span></div>
+    </div>
+    <div class="day-body">
+      <div class="legs"><table>
+        <thead><tr><th>Leg</th><th>Route</th><th class="num">Miles</th><th class="num">Drive</th></tr></thead>
+        <tbody>
+          <tr><td>Trinidad → Garden of the Gods</td><td>I-25 N via Pueblo, exit 146</td><td class="num">~135</td><td class="num">2:05</td></tr>
+          <tr><td>Garden → Manitou → Pikes gate</td><td>US 24 W to Cascade</td><td class="num">~12</td><td class="num">0:20</td></tr>
+          <tr><td>Pikes Peak Highway, up and back</td><td>Toll road, 19 mi each way</td><td class="num">~38</td><td class="num">2:15</td></tr>
+          <tr><td>Cascade → Tabernash</td><td>US 24 → I-25 N → C-470 → I-70 W → US 40 (Berthoud Pass)</td><td class="num">~160</td><td class="num">3:10</td></tr>
+          <tr class="total"><td>Total</td><td></td><td class="num">~345</td><td class="num">~7:50</td></tr>
+        </tbody>
+      </table></div>
+      <ol class="sched">
+        <li><time>7:15 AM</time><div class="what"><b>Leave Trinidad</b><span>Eat breakfast at the hotel. Restroom stop in Pueblo if needed.</span></div></li>
+        <li><time>9:30 AM</time><div class="what"><b>Garden of the Gods</b> <span class="chip must">Must see</span><span>Park in the North Main lot (off Juniper Way Loop). On a holiday weekend it fills by about 10. Walk the paved <b>Perkins Central Garden Trail</b> (1.1-mile loop, stroller-friendly), then take a photo at Balanced Rock on the way out.</span></div></li>
+        <li><time>11:00 AM</time><div class="what"><b>Lunch in Manitou Springs</b><span>Keep it under an hour. Pack sandwiches for the mountain too.</span></div></li>
+        <li><time>12:15 PM</time><div class="what"><b>Pikes Peak Highway gate</b> <span class="chip must">Must see</span> <span class="chip wx">Weather</span><span>This leaves almost 3 hours before the 3 PM last entry. Stop at Crystal Reservoir on the way up.</span></div></li>
+        <li><time>1:30 PM</time><div class="what"><b>Summit, 30–45 minutes</b><span>Expect it to be 30–40 °F colder than town and windy. Everyone needs a jacket and hat. Get the high-altitude donuts at the summit house. Leave sooner if the child has a headache or seems unusually tired.</span></div></li>
+        <li><time>2:15 PM</time><div class="what"><b>Drive down</b><span>Use low gear. There's a mandatory brake-temperature check at Glen Cove.</span></div></li>
+        <li><time>3:30 PM</time><div class="what"><b>Leave Cascade for Tabernash</b><span>Gas in Colorado Springs before I-25.</span></div></li>
+        <li><time>5:45 PM</time><div class="what"><b>Dinner in Idaho Springs</b><span>I-70 exit 240. A casual, kid-friendly stop. Beau Jo's pizza is the classic.</span></div></li>
+        <li><time>7:45 PM</time><div class="what"><b>Arrive Tabernash</b><span>You'll cross Berthoud Pass (11,307 ft) around dusk. It's a plowed US highway.</span></div></li>
+      </ol>
+      <div class="notes">
+        <div class="note backup"><h4>If Pikes Peak is closed or icy</h4><p>The road is often open only partway (to Glen Cove or Devils Playground) after snow. Take what's open, or ride the <b>Pikes Peak Cog Railway</b> from Manitou if tickets are available. Or spend more time in Garden of the Gods and Manitou, then leave early for Tabernash.</p></div>
+        <div class="note"><h4>Why this order</h4><p>The Garden opens at 5 AM and Pikes doesn't open until 9. This order uses the morning well and keeps the Pikes visit far from the 3 PM cutoff.</p></div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- SUNDAY -->
+<section id="sun">
+  <article class="day">
+    <div class="day-head">
+      <div class="day-date"><small>Sun</small><strong>11</strong></div>
+      <h3>Maroon Bells · Aspen · Independence ghost town · Independence Pass</h3>
+      <div class="facts"><span class="mono">~385 mi</span><span class="mono">~7¾ h driving</span><span>High point: Independence Pass <span class="mono">12,095 ft</span></span><span>Forecast: partly cloudy, 30% showers</span></div>
+    </div>
+    <div class="day-body">
+      <div class="legs"><table>
+        <thead><tr><th>Leg</th><th>Route</th><th class="num">Miles</th><th class="num">Drive</th></tr></thead>
+        <tbody>
+          <tr><td>Tabernash → Aspen Highlands</td><td>US 40 → Kremmling → CO 9 → Silverthorne → I-70 W → Glenwood → CO 82</td><td class="num">~205</td><td class="num">3:45</td></tr>
+          <tr><td>Aspen → Independence ghost town</td><td>CO 82 E</td><td class="num">~16</td><td class="num">0:35</td></tr>
+          <tr><td>Ghost town → pass → Leadville</td><td>CO 82 over the pass, Twin Lakes, US 24</td><td class="num">~43</td><td class="num">1:10</td></tr>
+          <tr><td>Leadville → Frisco → Tabernash</td><td>CO 91 Fremont Pass → I-70 E → CO 9 → US 40</td><td class="num">~120</td><td class="num">2:20</td></tr>
+          <tr class="total"><td>Total</td><td></td><td class="num">~385</td><td class="num">~7:50</td></tr>
+        </tbody>
+      </table></div>
+      <ol class="sched">
+        <li><time>5:45 AM</time><div class="what"><b>Leave Tabernash</b><span>Gas the night before. Carry breakfast. Watch for elk and deer on CO 9 before sunrise (about 7:10).</span></div></li>
+        <li><time>7:15 AM</time><div class="what"><b>Silverthorne: coffee and restrooms</b><span>15 minutes. Glenwood Canyon on I-70 comes next. Enjoy it in daylight.</span></div></li>
+        <li><time>9:50 AM</time><div class="what"><b>Park at Aspen Highlands</b><span>Paid garage at the shuttle stop. Restrooms are there.</span></div></li>
+        <li><time>10:15 AM</time><div class="what"><b>Shuttle to Maroon Lake</b> <span class="chip must">Must see</span> <span class="chip res">Reserved</span><span>A 20-minute ride. Walk the <b>Maroon Lake Scenic Loop</b> (about 1 mile, easy). Skip the 3.6-mile Crater Lake hike with a young child. It's around 9,600 ft and cold in the shade, so bring layers.</span></div></li>
+        <li><time>12:20 PM</time><div class="what"><b>Shuttle back</b></div></li>
+        <li><time>12:50 PM</time><div class="what"><b>Lunch and a downtown Aspen walk</b> <span class="chip nice">Nice to see</span><span>Wagner Park lawn is a good spot for the child to run. Gas in Aspen is expensive, so wait for Leadville or Frisco.</span></div></li>
+        <li><time>2:20 PM</time><div class="what"><b>Independence ghost town</b> <span class="chip nice">Nice to see</span> <span class="chip wx">Weather</span><span>Guided tours end in early October. Walk it on your own with the signs and brochure. It's a short, mostly flat path from the CO 82 pullout. About 45 minutes.</span></div></li>
+        <li><time>3:15 PM</time><div class="what"><b>Independence Pass summit overlook</b> <span class="chip nice">Nice to see</span> <span class="chip wx">Weather</span><span>Short paved path to the viewpoint, 15–20 minutes. Very windy.</span></div></li>
+        <li><time>4:00 PM</time><div class="what"><b>Twin Lakes photo stop, then Leadville</b><span>Restrooms and gas in Leadville around 4:30.</span></div></li>
+        <li><time>5:30 PM</time><div class="what"><b>Dinner in Frisco</b><span>Main Street has easy family options. Stay until 7:00 PM if you still need the Bear Lake permit, and book it here before you lose signal on CO 9.</span></div></li>
+        <li><time>8:50 PM</time><div class="what"><b>Arrive Tabernash</b><span>Late, and Monday starts at 6:15. Have everyone in pajamas before the last leg so the child can sleep in the car.</span></div></li>
+      </ol>
+      <div class="notes">
+        <div class="note backup"><h4>If Independence Pass is closed</h4><p>Return the way you came (Glenwood, I-70), which takes about the same time. Swap the ghost town for <b>Ashcroft ghost town</b>, 11 miles up Castle Creek Road from Aspen. It's open all year and easier with a child.</p></div>
+        <div class="note"><h4>This is the long Colorado day</h4><p>Nearly 8 hours in the car. Bring a tablet, snacks, and a nap plan for the Glenwood stretch. If someone is wiped out, skip the pass and take the interstate back.</p></div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- MONDAY -->
+<section id="mon">
+  <article class="day">
+    <div class="day-head">
+      <div class="day-date"><small>Mon</small><strong>12</strong></div>
+      <h3>Rocky Mountain National Park: across Trail Ridge to Bear Lake</h3>
+      <div class="facts"><span class="mono">~185 mi</span><span class="mono">~5 h driving (slow park roads)</span><span>High point: Trail Ridge <span class="mono">12,183 ft</span></span><span>Forecast: sunny, ~77 °F in Estes</span></div>
+    </div>
+    <div class="day-body">
+      <div class="legs"><table>
+        <thead><tr><th>Leg</th><th>Route</th><th class="num">Miles</th><th class="num">Drive</th></tr></thead>
+        <tbody>
+          <tr><td>Tabernash → Grand Lake entrance</td><td>US 40 → Granby → US 34</td><td class="num">~33</td><td class="num">0:40</td></tr>
+          <tr><td>Grand Lake → Bear Lake</td><td>Trail Ridge Road (US 34) → Bear Lake Road</td><td class="num">~57</td><td class="num">1:45</td></tr>
+          <tr><td>Bear Lake → Sprague → Estes Park</td><td>Bear Lake Road → US 36</td><td class="num">~14</td><td class="num">0:35</td></tr>
+          <tr><td>Estes Park → Tabernash</td><td>Trail Ridge Road west</td><td class="num">~80</td><td class="num">2:15</td></tr>
+          <tr class="total"><td>Total</td><td></td><td class="num">~185</td><td class="num">~5:15</td></tr>
+        </tbody>
+      </table></div>
+      <ol class="sched">
+        <li><time>6:15 AM</time><div class="what"><b>Leave Tabernash</b><span>Fill the tank in Granby. There's no gas inside the park.</span></div></li>
+        <li><time>6:55 AM</time><div class="what"><b>Grand Lake entrance</b><span>You're in before 9 AM, so no general timed-entry permit is needed.</span></div></li>
+        <li><time>7:00 AM</time><div class="what"><b>Kawuneeche Valley at dawn</b> <span class="chip nice">Nice to see</span><span>It's elk rut season. Elk and sometimes moose are in the meadows. Watch from the car or a pullout and stay at least 75 feet away.</span></div></li>
+        <li><time>7:30 AM</time><div class="what"><b>Trail Ridge Road eastbound</b> <span class="chip must">Must see</span> <span class="chip wx">Weather</span><span>Stop at Medicine Bow Curve, Forest Canyon Overlook, and Rainbow Curve. Expect possible ice in shaded spots early.</span></div></li>
+        <li><time>9:00 AM</time><div class="what"><b>Bear Lake</b> <span class="chip must">Must see</span> <span class="chip res">Permit</span><span>The lake loop is about 0.6 mile and nearly flat. If the child is still keen, add <b>Nymph Lake</b> (0.5 mile each way, steady uphill). Allow 1½ hours.</span></div></li>
+        <li><time>10:45 AM</time><div class="what"><b>Sprague Lake</b> <span class="chip nice">Nice to see</span><span>A flat 0.8-mile loop with mountain reflections. Probably the best walk of the day for a young child.</span></div></li>
+        <li><time>11:45 AM</time><div class="what"><b>Moraine Park: elk</b> <span class="chip nice">Nice to see</span><span>Watch from the pullouts on Bear Lake Road.</span></div></li>
+        <li><time>12:15 PM</time><div class="what"><b>Lunch in Estes Park</b><span>Walk the Riverwalk. Restrooms and gas are here too.</span></div></li>
+        <li><time>1:45 PM</time><div class="what"><b>Trail Ridge westbound</b><span>Stop at Many Parks Curve and the Alpine Visitor Center (11,796 ft). The center may already be closed for the season, but the overlook is still worth it.</span></div></li>
+        <li><time>4:00 PM</time><div class="what"><b>Grand Lake town</b> <span class="chip nice">Nice to see</span><span>Boardwalk, the lake beach, and an early dinner.</span></div></li>
+        <li><time>6:00 PM</time><div class="what"><b>Back in Tabernash</b><span>Pack the car tonight.</span></div></li>
+      </ol>
+      <div class="notes">
+        <div class="note backup"><h4>No Bear Lake permit</h4><ul><li>The park's free shuttle runs from the <b>Park &amp; Ride</b> on Bear Lake Road through Oct 18. Get there before about 9 AM because the lot fills on the holiday. Ask the ranger at the Bear Lake Road station which permit the Park &amp; Ride needs that day.</li><li>Or skip it and see <b>Lily Lake</b> (flat 0.8-mile loop on CO 7, no permit), Sheep Lakes, and the Alluvial Fan.</li></ul></div>
+        <div class="note backup"><h4>Trail Ridge closed</h4><p>Don't make the 5½-hour drive around the park. Do a <b>west-side day</b> instead: Kawuneeche Valley wildlife, the flat 1-mile <b>Coyote Valley Trail</b>, Adams Falls (0.6 mile round trip), and Grand Lake town. Plan it for an easy afternoon.</p></div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- DECISION -->
+<section id="decision">
+  <div class="sec-head">
+    <span class="eyebrow">The big decision</span>
+    <h2>Tuesday: home, or the Million Dollar Highway?</h2>
+  </div>
+  <div class="verdict">
+    <h3>If Wednesday is free, take Option B</h3>
+    <p>Ouray, Red Mountain Pass, and Silverton are the strongest scenery of the trip. They're also lower than this week's other stops, so they're the best bet for any remaining fall color. You'll still have one long day getting home, just on Wednesday instead of Tuesday.</p>
+  </div>
+  <div class="compare"><table>
+    <thead><tr><th></th><th>A · Straight home Tue</th><th>B · Durango Tue, home Wed</th></tr></thead>
+    <tbody>
+      <tr><td>Tuesday</td><td>~870 mi · ~13¾ h driving</td><td class="rec">~425 mi · ~8 h, mostly scenic</td></tr>
+      <tr><td>Wednesday</td><td>—</td><td>~860 mi · ~13 h driving</td></tr>
+      <tr><td>Home in Dallas</td><td>Tue ~11 PM CT</td><td>Wed ~9:30 PM CT</td></tr>
+      <tr><td>Adds</td><td>Nothing. Interstate and plains.</td><td class="rec">Glenwood Canyon, Ouray, Million Dollar Hwy, Silverton, Durango</td></tr>
+      <tr><td>Extra cost</td><td>—</td><td>1 hotel night, 2 more meals, about 40 more miles</td></tr>
+      <tr><td>Weather risk</td><td>Low. Only Berthoud Pass and Raton Pass.</td><td>Red Mountain Pass at 11,018 ft on Tue. Backup route below.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small muted">If Wednesday is free but nobody wants a 13-hour day, there's a gentler Option C: drive Tuesday from Tabernash to Amarillo (~515 mi, 8 h), then Wednesday to Dallas (~365 mi, 5½ h). You'd skip the Million Dollar Highway but get two easy days.</p>
+
+  <div class="toggle" role="group" aria-label="Show Tuesday plan">
+    <button type="button" id="btn-b" aria-pressed="true">Option B plan</button>
+    <button type="button" id="btn-a" aria-pressed="false">Option A plan</button>
+  </div>
+
+  <div id="plan-b">
+    <article class="day">
+      <div class="day-head">
+        <div class="day-date"><small>Tue</small><strong>13</strong></div>
+        <h3>Tabernash → Ouray → Million Dollar Highway → Silverton → Durango</h3>
+        <div class="facts"><span class="mono">~425 mi</span><span class="mono">~8 h driving</span><span>High point: Red Mountain Pass <span class="mono">11,018 ft</span></span><span>Forecast: 20% PM showers</span></div>
+      </div>
+      <div class="day-body">
+        <div class="legs"><table>
+          <thead><tr><th>Leg</th><th>Route</th><th class="num">Miles</th><th class="num">Drive</th></tr></thead>
+          <tbody>
+            <tr><td>Tabernash → Glenwood Springs</td><td>US 40 → CO 9 → I-70 W</td><td class="num">~170</td><td class="num">3:00</td></tr>
+            <tr><td>Glenwood → Montrose</td><td>I-70 W → Grand Junction → US 50</td><td class="num">~150</td><td class="num">2:20</td></tr>
+            <tr><td>Montrose → Ouray</td><td>US 550 via Ridgway</td><td class="num">~37</td><td class="num">0:45</td></tr>
+            <tr><td>Ouray → Silverton</td><td>US 550 Million Dollar Highway</td><td class="num">~23</td><td class="num">0:50</td></tr>
+            <tr><td>Silverton → Durango</td><td>US 550 over Molas &amp; Coal Bank passes</td><td class="num">~48</td><td class="num">1:15</td></tr>
+            <tr class="total"><td>Total</td><td></td><td class="num">~425</td><td class="num">~8:10</td></tr>
+          </tbody>
+        </table></div>
+        <ol class="sched">
+          <li><time>6:30 AM</time><div class="what"><b>Leave Tabernash</b><span>Check COtrip for US 550 before you leave.</span></div></li>
+          <li><time>9:30 AM</time><div class="what"><b>Glenwood Springs: breakfast, gas, restrooms</b><span>Glenwood Canyon is just before town, and the gold along the river should still be good.</span></div></li>
+          <li><time>12:35 PM</time><div class="what"><b>Lunch in Montrose</b></div></li>
+          <li><time>2:00 PM</time><div class="what"><b>Ouray</b> <span class="chip nice">Nice to see</span><span>A walk on Main Street. Box Canyon Falls is a short walk if it's open (check hours).</span></div></li>
+          <li><time>2:45 PM</time><div class="what"><b>Million Dollar Highway</b> <span class="chip must">Must see</span> <span class="chip wx">Weather</span><span>Use the pullouts. There are no guardrails on long stretches, so stay unhurried and let faster cars by. Stop at the Red Mountain overlook.</span></div></li>
+          <li><time>3:45 PM</time><div class="what"><b>Silverton</b> <span class="chip nice">Nice to see</span><span>A walk down Greene Street. Gas is limited, so top up in Ouray or Montrose.</span></div></li>
+          <li><time>5:45 PM</time><div class="what"><b>Arrive Durango</b><span>Sunset is around 6:40, so you'll arrive with daylight left. Dinner on Main Avenue.</span></div></li>
+        </ol>
+        <div class="notes">
+          <div class="note backup"><h4>If Red Mountain Pass is closed</h4><p>From Ridgway, take <b>CO 62 over Dallas Divide → CO 145 past Telluride → Lizard Head Pass → Dolores → Durango</b>. It's about 155 miles and 3¼ hours, and it's one of the best fall drives in the state. You still see Ouray, which is 10 minutes south of Ridgway.</p></div>
+          <div class="note"><h4>Scenic alternative to Grand Junction</h4><p>CO 133 over McClure Pass (Carbondale → Paonia) is shorter and prettier, but it's curvy. Skip it if the child gets carsick.</p></div>
+        </div>
+      </div>
+    </article>
+    <article class="day" style="margin-top:16px">
+      <div class="day-head">
+        <div class="day-date"><small>Wed</small><strong>14</strong></div>
+        <h3>Durango → Dallas</h3>
+        <div class="facts"><span class="mono">~860 mi</span><span class="mono">~13 h driving</span><span>No high passes on this route</span><span>Clocks go forward 1 h in Texas</span></div>
+      </div>
+      <div class="day-body">
+        <div class="legs"><table>
+          <thead><tr><th>Leg</th><th>Route</th><th class="num">Miles</th><th class="num">Drive</th></tr></thead>
+          <tbody>
+            <tr><td>Durango → Albuquerque</td><td>US 550 S via Aztec, Cuba, Bernalillo → I-25</td><td class="num">~215</td><td class="num">3:30</td></tr>
+            <tr><td>Albuquerque → Amarillo</td><td>I-40 E via Tucumcari</td><td class="num">~285</td><td class="num">4:00</td></tr>
+            <tr><td>Amarillo → Dallas</td><td>US 287 → I-35E</td><td class="num">~360</td><td class="num">5:30</td></tr>
+            <tr class="total"><td>Total</td><td></td><td class="num">~860</td><td class="num">~13:00</td></tr>
+          </tbody>
+        </table></div>
+        <ol class="sched">
+          <li><time>5:30 AM MT</time><div class="what"><b>Leave Durango</b><span>Breakfast to go. Gas in Bernalillo or Albuquerque.</span></div></li>
+          <li><time>9:00 AM MT</time><div class="what"><b>Albuquerque: restroom and stretch</b></div></li>
+          <li><time>12:00 PM MT</time><div class="what"><b>Tucumcari: lunch and gas</b></div></li>
+          <li><time>3:05 PM CT</time><div class="what"><b>Amarillo: gas and a long stretch</b></div></li>
+          <li><time>6:35 PM CT</time><div class="what"><b>Wichita Falls: dinner</b></div></li>
+          <li><time>9:30 PM CT</time><div class="what"><b>Home in Dallas</b></div></li>
+        </ol>
+        <div class="notes"><div class="note"><h4>Why not Wolf Creek Pass?</h4><p>The eastern route via Pagosa and Walsenburg is about the same distance but crosses a 10,857-ft pass. The Albuquerque route stays at lower elevation and is mostly 75-mph interstate.</p></div></div>
+      </div>
+    </article>
+  </div>
+
+  <div id="plan-a" hidden>
+    <article class="day">
+      <div class="day-head">
+        <div class="day-date"><small>Tue</small><strong>13</strong></div>
+        <h3>Tabernash → Dallas, fastest practical route</h3>
+        <div class="facts"><span class="mono">~870 mi</span><span class="mono">~13¾ h driving</span><span>High point: Berthoud Pass <span class="mono">11,307 ft</span></span><span>Two drivers strongly advised</span></div>
+      </div>
+      <div class="day-body">
+        <div class="legs"><table>
+          <thead><tr><th>Leg</th><th>Route</th><th class="num">Miles</th><th class="num">Drive</th></tr></thead>
+          <tbody>
+            <tr><td>Tabernash → Denver (C-470)</td><td>US 40 Berthoud Pass → I-70 E → C-470</td><td class="num">~80</td><td class="num">1:40</td></tr>
+            <tr><td>Denver → Trinidad</td><td>I-25 S via Colorado Springs, Pueblo</td><td class="num">~185</td><td class="num">2:50</td></tr>
+            <tr><td>Trinidad → Dallas</td><td>Friday's route in reverse</td><td class="num">~605</td><td class="num">9:25</td></tr>
+            <tr class="total"><td>Total</td><td></td><td class="num">~870</td><td class="num">~13:55</td></tr>
+          </tbody>
+        </table></div>
+        <ol class="sched">
+          <li><time>5:30 AM MT</time><div class="what"><b>Leave Tabernash</b><span>Cross Berthoud Pass at first light. Check COtrip first.</span></div></li>
+          <li><time>8:45 AM MT</time><div class="what"><b>Pueblo: breakfast and gas</b></div></li>
+          <li><time>11:05 AM MT</time><div class="what"><b>Raton: restroom</b></div></li>
+          <li><time>12:30 PM MT</time><div class="what"><b>Clayton: lunch and gas</b></div></li>
+          <li><time>4:50 PM CT</time><div class="what"><b>Amarillo: gas</b></div></li>
+          <li><time>8:05 PM CT</time><div class="what"><b>Wichita Falls: dinner</b></div></li>
+          <li><time>11:00 PM CT</time><div class="what"><b>Home in Dallas</b></div></li>
+        </ol>
+        <div class="notes"><div class="note"><h4>Alternative</h4><p>Take I-70 east to Limon, then US 287 through Lamar and Boise City. It's about the same time and avoids I-25 traffic and Raton Pass. Use it if Raton has snow.</p></div></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="roads">
+  <div class="sec-head">
+    <span class="eyebrow">Check the morning of</span>
+    <h2>Weather-dependent roads and backups</h2>
+    <p>The forecast for Oct 10–13 looks dry and mild as of Oct 6. Early-season snow can still close any of these overnight. Check <b>COtrip.org</b> (or dial 511 in Colorado) every morning before you leave. For Trail Ridge, call the RMNP road line, <span class="mono">970-586-1222</span>.</p>
+  </div>
+  <div class="legs"><table class="roads">
+    <thead><tr><th>Road</th><th>Day</th><th>Primary</th><th>Backup if closed</th></tr></thead>
+    <tbody>
+      <tr><td>Pikes Peak Hwy (14,115 ft)</td><td>Sat</td><td>Drive to the summit, last entry 3 PM</td><td>Drive the open section, or take the Cog Railway</td></tr>
+      <tr><td>Berthoud Pass, US 40 (11,307 ft)</td><td>Sat · Tue A</td><td>The direct way in and out of Tabernash</td><td>CO 9 via Kremmling and Silverthorne to I-70 (adds about 45 min)</td></tr>
+      <tr><td>Independence Pass, CO 82 (12,095 ft)</td><td>Sun</td><td>Return over the pass with the ghost town on the way</td><td>Return via Glenwood and I-70, and visit Ashcroft ghost town instead</td></tr>
+      <tr><td>Trail Ridge Road (12,183 ft)</td><td>Mon</td><td>Cross both ways to Bear Lake</td><td>West-side day only. The way around via Berthoud and Nederland is ~2¾ h each way, so skip it.</td></tr>
+      <tr><td>Red Mountain Pass, US 550 (11,018 ft)</td><td>Tue B</td><td>Ouray → Silverton → Durango</td><td>Dallas Divide → Telluride → Lizard Head → Durango</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="verdicts">
+  <div class="sec-head">
+    <span class="eyebrow">Your original list, re-scored</span>
+    <h2>What to keep and what to skip</h2>
+  </div>
+  <div class="legs"><table>
+    <thead><tr><th>Attraction</th><th>Verdict</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Garden of the Gods</td><td><span class="chip must">Must see</span></td><td>Free, easy, paved, and on the way.</td></tr>
+      <tr><td>Pikes Peak</td><td><span class="chip must">Must see</span></td><td>Open in October with no reservation. Watch the 3 PM last entry.</td></tr>
+      <tr><td>Maroon Bells</td><td><span class="chip must">Must see</span></td><td>Shuttle runs through Oct 18. Aspens may be past peak, but the view still delivers.</td></tr>
+      <tr><td>Bear Lake (RMNP)</td><td><span class="chip must">Must see</span></td><td>Only with the permit, and only if Trail Ridge is open.</td></tr>
+      <tr><td>Trail Ridge Road</td><td><span class="chip must">Must see</span></td><td>Upgraded from optional because it's your route to Bear Lake. Usually closes for the season around Oct 23.</td></tr>
+      <tr><td>Million Dollar Highway</td><td><span class="chip must">Must see</span></td><td>Only with the Durango night (Option B).</td></tr>
+      <tr><td>Aspen downtown</td><td><span class="chip nice">Nice to see</span></td><td>Lunch stop. Don't linger.</td></tr>
+      <tr><td>Independence ghost town</td><td><span class="chip nice">Nice to see</span></td><td>On your route home, short and flat. Self-guided now that tours are over.</td></tr>
+      <tr><td>Independence Pass</td><td><span class="chip nice">Nice to see</span></td><td>Weather call on the day.</td></tr>
+      <tr><td>Sprague Lake · Moraine Park · Grand Lake</td><td><span class="chip nice">Nice to see</span></td><td>Easiest, most kid-friendly stops in RMNP.</td></tr>
+      <tr><td>Breckenridge Gondola</td><td><span class="chip skip">Skip</span></td><td>It's a transit gondola with no summit payoff, and it's typically in its fall shutdown in mid-October.</td></tr>
+      <tr><td>Royal Gorge Route Railroad</td><td><span class="chip skip">Skip</span></td><td>A 2-hour ride plus a Cañon City detour, on the day that already has Pikes Peak.</td></tr>
+      <tr><td>Crater Lake hike (Maroon Bells)</td><td><span class="chip skip">Skip</span></td><td>3.6 miles round trip at 10,000 ft. Too much for a young child.</td></tr>
+      <tr><td>Old Fall River Road (RMNP)</td><td><span class="chip skip">Skip</span></td><td>One-way gravel road that typically closes to cars in early October.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="family">
+  <div class="sec-head">
+    <span class="eyebrow">Traveling with a young child</span>
+    <h2>Kid, altitude, and car notes</h2>
+  </div>
+  <div class="notes">
+    <div class="note"><h4>Altitude</h4><ul><li>Tabernash sits at about 8,300 ft. Expect the first night to be restless.</li><li>Water all day, every day. Fill bottles at every stop.</li><li>Above 12,000 ft (Pikes, Trail Ridge, Independence), keep stops short. A headache, vomiting, or unusual sleepiness in the child means drive down. Descending fixes it.</li></ul></div>
+    <div class="note"><h4>Cold and sun</h4><ul><li>Expect 70s in the valleys and 20s–40s with wind on the summits on the same day.</li><li>Pack hats, gloves, and a puffy jacket for everyone.</li><li>Bring sunscreen and sunglasses. UV is strong at altitude.</li></ul></div>
+    <div class="note"><h4>In the car</h4><ul><li>Carsickness on switchbacks: sit the child where they can see out the front, keep snacks bland, and bring a bag just in case.</li><li>Download offline maps for CO 82, Trail Ridge, US 550, and US 87. There's no signal for long stretches.</li><li>Refill the gas tank at half on mountain days.</li></ul></div>
+    <div class="note"><h4>Wildlife</h4><ul><li>Elk rut is underway in RMNP and Grand County. Bulls are aggressive. Stay 75 ft or more away and watch from the car.</li><li>Dawn and dusk drives (Fri night, Sun morning) are prime time for animals on the road.</li></ul></div>
+  </div>
+</section>
+
+<footer>
+  <p>Checked Tuesday, Oct 6, 2026. Mileages and times are planning estimates from standard routes. Re-run them in your map app the night before each day. Rules and hours below come from official and local sources as reported on that date.</p>
+  <ul>
+    <li>RMNP timed entry and Bear Lake Road dates: <a href="https://www.nps.gov/romo/planyourvisit/timed-entry-permit-system.htm">nps.gov/romo</a> · booking: <a href="https://www.recreation.gov/timed-entry/10086910">recreation.gov</a></li>
+    <li>RMNP shuttles: <a href="https://www.nps.gov/romo/planyourvisit/shuttle-buses-and-public-transit.htm">nps.gov shuttle page</a></li>
+    <li>Maroon Bells shuttle and parking: <a href="https://www.visitmaroonbells.com/">visitmaroonbells.com</a> · <a href="https://aspenchamber.org/things-to-do/maroon-bells/reservations/">Aspen Chamber</a></li>
+    <li>Pikes Peak hours and rates: <a href="https://coloradosprings.gov/pikes-peak-americas-mountain/page/pikes-peak-hours-and-rates">coloradosprings.gov</a></li>
+    <li>Garden of the Gods: <a href="https://gardenofgods.com/">gardenofgods.com</a></li>
+    <li>Independence ghost town: <a href="https://aspenchamber.org/things-to-do/history-heritage/ghost-towns/">Aspen Chamber</a> · Independence Pass status: <a href="https://www.independencepass.org/hwy-82-status">independencepass.org</a></li>
+    <li>US 550 Red Mountain Pass 2026 work and closures: <a href="https://www.codot.gov/news/region5News">CDOT Region 5</a> · live roads: <a href="https://www.cotrip.org/">COtrip.org</a></li>
+    <li>Fall color 2026: <a href="https://morethanjustparks.com/foliage-tracker/colorado">foliage tracker</a> · <a href="https://www.summitdaily.com/news/colorado-fall-leaf-outlook-mountains-2026/">Summit Daily</a></li>
+    <li>Forecasts: <a href="https://forecast.weather.gov/MapClick.php?lon=-105.522008&amp;lat=40.359659">NWS Estes Park</a> · <a href="https://opensnow.com/dailysnow/colorado">OpenSnow Colorado</a></li>
+  </ul>
+</footer>
+</div>
+
+<script>
+(function(){
+  var KEY='co-trip-2026-checks';
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){saved={}}
+  document.querySelectorAll('.task input[type=checkbox]').forEach(function(box){
+    var task=box.closest('.task');
+    if(saved[box.id]){box.checked=true;task.classList.add('done')}
+    box.addEventListener('change',function(){
+      task.classList.toggle('done',box.checked);
+      saved[box.id]=box.checked;
+      try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}
+    });
+  });
+  var a=document.getElementById('btn-a'),b=document.getElementById('btn-b');
+  var pa=document.getElementById('plan-a'),pb=document.getElementById('plan-b');
+  function show(which){
+    var isA=which==='a';
+    pa.hidden=!isA;pb.hidden=isA;
+    a.setAttribute('aria-pressed',String(isA));b.setAttribute('aria-pressed',String(!isA));
+  }
+  a.addEventListener('click',function(){show('a')});
+  b.addEventListener('click',function(){show('b')});
+})();
+</script>
+</body>
+</html>
